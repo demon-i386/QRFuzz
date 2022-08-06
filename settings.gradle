@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name='qrbruteforcer'
+rootProject.name='QR Fuzzer'

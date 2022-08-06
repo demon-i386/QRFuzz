@@ -4,15 +4,23 @@ import com.mifmif.common.regex.Generex;
 import java.util.UUID;
 
 public abstract class RandomString {
-    private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final String NUMERIC_STRING = "0123456789";
+
+    public static String decrementFuzzing(int stringLenght, int fuzzOffset){
+        return "";
+    }
+
+    public static String incrementFuzzing(int stringLength, int fuzzOffset){
+        return "";
+    }
 
     public static String randomAlphaNumeric(int stringLength) {
 
         StringBuilder builder = new StringBuilder();
 
         while (stringLength-- != 0) {
-            int character = (int)(Math.random()*ALPHA_NUMERIC_STRING.length());
-            builder.append(ALPHA_NUMERIC_STRING.charAt(character));
+            int character = (int)(Math.random()*NUMERIC_STRING.length());
+            builder.append(NUMERIC_STRING.charAt(character));
         }
 
         return builder.toString();

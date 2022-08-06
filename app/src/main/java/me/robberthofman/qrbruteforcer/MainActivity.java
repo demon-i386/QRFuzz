@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.zxing.BarcodeFormat;
@@ -40,7 +41,10 @@ public class MainActivity extends AppCompatActivity {
     private TextView qrSizeTextView;
     private int stringLength = 1;
     private int speed = 1;
+    private int imageSize;
     private boolean running = false;
+    private Switch switchBtn;
+    private TextView qrCodeData;
 
     private Handler handler = new Handler();
     private Runnable timedTask = new Runnable(){
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT); // set entire app to portrait
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
         setup();
 
@@ -82,10 +87,13 @@ public class MainActivity extends AppCompatActivity {
         stringLengthTextView = findViewById(R.id.stringLengthTextView);
         qrSizeSeekBar = findViewById(R.id.qrSizeSeekBar);
         qrSizeTextView = findViewById(R.id.qrSizeTextView);
+        switchBtn = findViewById(R.id.switch2);
+        qrCodeData = findViewById(R.id.qrdata);
 
         speedTextView.setText("speed: " + speed);
         stringLengthTextView.setText("length: " + stringLength);
         qrSizeTextView.setText("size:" + qrSize);
+
 
         speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -151,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void updateSize(int newSize){
-        qrSize = Math.max(100, 50*Math.round(newSize/10)); // brute force above 20 characters would take too long anyways
+        qrSize = Math.max(100, 50*Math.round(newSize)/10); // brute force above 20 characters would take too long anyways
         qrSizeTextView.setText("size: "+ qrSize);
         updateQrCode();
     }
@@ -164,17 +172,29 @@ public class MainActivity extends AppCompatActivity {
         } catch (WriterException e) {
             e.printStackTrace();
         }
+        qrCodeData.setText(toEncode);
         qrBitmap = barcodeEncoder.createBitmap(qrBitMatrix);
 
-        TextView textView = findViewById(R.id.textView);
-        textView.setText(toEncode); // display encoded string
-
         ImageView imageView = findViewById(R.id.imageView);
+
         imageView.setImageBitmap(qrBitmap); // display new qr code
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        if(switchBtn.isChecked()){
+            imageSize = 1450;
+        }
+        else{
+            imageSize = 1250;
+        }
+        imageView.getLayoutParams().height = imageSize;
+        imageView.getLayoutParams().width = imageSize;
     }
 
     void newRandomQR() {
-        //toEncode = RandomString.randomAlphaNumeric(stringLength);
-        toEncode = RandomString.randomUUID();
+        if(switchBtn.isChecked()){
+            toEncode = RandomString.randomAlphaNumeric(stringLength);
+        }
+        else{
+            toEncode = RandomString.randomUUID();
+        }
     }
 }
