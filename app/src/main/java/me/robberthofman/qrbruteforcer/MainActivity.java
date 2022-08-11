@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -45,6 +46,12 @@ public class MainActivity extends AppCompatActivity {
     private boolean running = false;
     private Switch switchBtn;
     private TextView qrCodeData;
+    private Switch fuzzingType;
+    private TextView currentModeShow, alertMessage;
+    private Switch definedModeTypeSwitch;
+    private EditText maximumDecimalOffset, minimumDecimalOffset;
+    private int maximumDecimalOffsetValue, minimumDecimalOffsetValue;
+    private boolean checked;
 
     private Handler handler = new Handler();
     private Runnable timedTask = new Runnable(){
@@ -74,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else {
                     running = false;
+                    handler.post(timedTask);
                 }
             }
         });
@@ -92,7 +100,17 @@ public class MainActivity extends AppCompatActivity {
 
         speedTextView.setText("speed: " + speed);
         stringLengthTextView.setText("length: " + stringLength);
-        qrSizeTextView.setText("size:" + qrSize);
+        qrSizeTextView.setText("size: " + qrSize);
+        fuzzingType = findViewById(R.id.switchFuzzingType);
+        currentModeShow = findViewById(R.id.currentModeTextView);
+
+        definedModeTypeSwitch = findViewById(R.id.definedModeIncDecSwitch);
+
+        maximumDecimalOffset = findViewById(R.id.offsetMaximumNumber);
+        minimumDecimalOffset = findViewById(R.id.offsetMinimumNumber);
+        alertMessage = findViewById(R.id.textViewWarnings);
+
+
 
 
         speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -180,21 +198,83 @@ public class MainActivity extends AppCompatActivity {
         imageView.setImageBitmap(qrBitmap); // display new qr code
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         if(switchBtn.isChecked()){
-            imageSize = 1450;
+            imageSize = 1150;
         }
         else{
-            imageSize = 1250;
+            imageSize = 1150;
         }
         imageView.getLayoutParams().height = imageSize;
         imageView.getLayoutParams().width = imageSize;
     }
 
     void newRandomQR() {
-        if(switchBtn.isChecked()){
+        if(fuzzingType.isChecked() && switchBtn.isChecked()){
+            currentModeShow.setText("Defined Mode");
+            if(definedModeTypeSwitch.isChecked()){
+                if(!checked){
+                    if(maximumDecimalOffset.getText().toString().equals("")) {
+                        alertMessage.setText("Enter a maximum offset value");
+                        return;
+                    }
+                    if(minimumDecimalOffset.getText().toString().equals("")){
+                        minimumDecimalOffsetValue = 0;
+                    }
+                    else{
+                        minimumDecimalOffsetValue = Integer.parseInt(minimumDecimalOffset.getText().toString());
+                    }
+                    alertMessage.setText("");
+                    maximumDecimalOffsetValue = Integer.parseInt(maximumDecimalOffset.getText().toString());
+                    checked = true;
+                }
+                maximumDecimalOffsetValue = --maximumDecimalOffsetValue;
+                if(maximumDecimalOffsetValue < minimumDecimalOffsetValue){
+                    minimumDecimalOffsetValue = 0;
+                    maximumDecimalOffsetValue = 0;
+                    checked = false;
+                    return;
+                }
+                toEncode = String.valueOf(maximumDecimalOffsetValue);
+            }
+            else{
+                if(!checked){
+                    if(minimumDecimalOffset.getText().toString().equals("")){
+                        alertMessage.setText("Enter a minimum offset value");
+                        return;
+                    }
+
+                    if(!maximumDecimalOffset.getText().toString().equals("")){
+                        maximumDecimalOffsetValue = Integer.parseInt(maximumDecimalOffset.getText().toString());
+                    }
+                    alertMessage.setText("");
+                    minimumDecimalOffsetValue = Integer.parseInt(minimumDecimalOffset.getText().toString());
+                    checked = true;
+                }
+                minimumDecimalOffsetValue = ++minimumDecimalOffsetValue;
+                if(minimumDecimalOffsetValue > maximumDecimalOffsetValue && maximumDecimalOffsetValue != 0){
+                    minimumDecimalOffsetValue = 0;
+                    maximumDecimalOffsetValue = 0;
+                    checked = false;
+                    return;
+                }
+                toEncode = String.valueOf(minimumDecimalOffsetValue);
+            }
+        }
+
+        if(switchBtn.isChecked() && !fuzzingType.isChecked()){
+            checked = false;
+            fuzzingType.setVisibility(View.VISIBLE);
+            findViewById(R.id.textViewRandom).setVisibility(View.VISIBLE);
+            findViewById(R.id.textViewDefined).setVisibility(View.VISIBLE);
+            currentModeShow.setText("Random Mode");
             toEncode = RandomString.randomAlphaNumeric(stringLength);
         }
-        else{
-            toEncode = RandomString.randomUUID();
+        if(!switchBtn.isChecked() && !fuzzingType.isChecked()){
+            checked = false;
+            fuzzingType.setVisibility(View.INVISIBLE);
+            findViewById(R.id.textViewRandom).setVisibility(View.INVISIBLE);
+            findViewById(R.id.textViewDefined).setVisibility(View.INVISIBLE);
+            currentModeShow.setText("UUID Mode");
+            toEncode = "teste";
         }
     }
 }
