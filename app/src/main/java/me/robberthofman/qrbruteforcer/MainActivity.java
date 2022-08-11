@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText maximumDecimalOffset, minimumDecimalOffset;
     private int maximumDecimalOffsetValue, minimumDecimalOffsetValue;
     private boolean checked;
+    private Button generateButton;
 
     private Handler handler = new Handler();
     private Runnable timedTask = new Runnable(){
@@ -71,16 +73,19 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
         setup();
+        generateButton = findViewById(R.id.button);
 
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                generateButton.setText("Generate");
                 if (!running) {
                     running = true;
                     handler.post(timedTask);
                 }
                 else {
                     running = false;
+                    generateButton.setText("Paused");
                     handler.post(timedTask);
                 }
             }
@@ -274,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.textViewRandom).setVisibility(View.INVISIBLE);
             findViewById(R.id.textViewDefined).setVisibility(View.INVISIBLE);
             currentModeShow.setText("UUID Mode");
-            toEncode = "teste";
+            toEncode = RandomString.randomUUID();
         }
     }
 }
